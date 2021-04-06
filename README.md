@@ -13,3 +13,4 @@ Direct message wipe
 
 # Thanks to
 instagrapi, obv.
+[https://github.com/adw0rd]
