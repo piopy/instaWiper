@@ -4,7 +4,7 @@
 -  Delete/archive ALL stories and posts
 -  Unfollow who doesn't follow you back (including Chiara Ferragni)(Manual mode can be selected)
 -  Unfollow all
--  Deep erase of all your Directs
+-  Deep erase of all your Directs (Manual mode can be selected)
 -  Backup ALL your post
 
 # Install
