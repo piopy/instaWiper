@@ -79,11 +79,22 @@ def direct_eraser():
         time.sleep(3)
         threads=api.direct_threads(50)
         if len(threads)>0:
-            for t in threads:
-                print("Deleting {} thread".format(t.thread_title))
-                deep_direct_eraser(t.id)
-                api.direct_thread_hide(t.id)
-                randomsleep()   #time.sleep(random.randint(1,60)/10)
+            choice=input("Do you want to enable the manual mode? (Y for yes)").lower()
+            if choice=='y':
+                for t in threads:
+                    print("Deleting {} thread".format(t.thread_title))
+                    risp=input("Delete this thread? (Y for yes)").lower()
+                    if risp == 'y':
+                        deep_direct_eraser(t.id)
+                        api.direct_thread_hide(t.id)
+                        randomsleep()   #time.sleep(random.randint(1,60)/10)
+                    else: print(t.thread_title,"thread not deleted")
+            else:
+                for t in threads:
+                    print("Deleting {} thread".format(t.thread_title))
+                    deep_direct_eraser(t.id)
+                    api.direct_thread_hide(t.id)
+                    randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All threads are deleted!")
     return
 
