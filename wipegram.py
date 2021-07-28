@@ -39,6 +39,11 @@ def login():
         savecookie(api.get_settings())
 
 ### CORE ###
+def randomsleep():
+    '''Sleeps from 0.1 to 6 seconds, is commented but you can uncomment it to enable it. Current API sleeps themself so there's no longer need of this'''
+    time.sleep(0)   # time.sleep(random.randint(1,60)/10)
+    return
+
 def cancella_p():
     while len(api.user_medias_v1(api.user_id_from_username(user_name),amount=50))!=0:
         time.sleep(3)
@@ -46,7 +51,7 @@ def cancella_p():
         if len(medias) >0:
             for m in medias:
                 api.media_delete(m.id)
-                time.sleep(random.randint(1,60)/10)
+                randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All posts are deleted!")
 
 def archivia_p():
@@ -56,7 +61,7 @@ def archivia_p():
         if len(medias) >0:
             for m in medias:
                 api.media_archive(m.id)
-                time.sleep(random.randint(1,60)/10)
+                randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All posts are archived!")
 
 def cancella_s():
@@ -65,7 +70,7 @@ def cancella_s():
         if len(medias)>0:
             for m in medias:
                 api.story_delete(m.id)
-                time.sleep(random.randint(1,60)/10)
+                randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All stories are deleted!")
 
 def direct_eraser():
@@ -75,20 +80,22 @@ def direct_eraser():
         threads=api.direct_threads(50)
         if len(threads)>0:
             for t in threads:
+                print("Deleting {} thread".format(t.thread_title))
+                deep_direct_eraser(t.id)
                 api.direct_thread_hide(t.id)
-                time.sleep(random.randint(1,60)/10)
+                randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All threads are deleted!")
     return
 
-# def deep_direct_eraser(thread_id): #TODO
-#     global user_name
-#     id=thread_id
-#     thread=api.direct_thread(id)
-#     messages=thread.messages
-#     for m in messages:
-#         if m.user_id==api.user_id_from_username(user_name):
-#             print("ancora non esiste questa funzione")
-#     return
+def deep_direct_eraser(thread_id): #TODO
+    global user_name
+    id=thread_id
+    thread=api.direct_thread(id)
+    messages=thread.messages
+    for m in messages:
+        if m.user_id==api.user_id_from_username(user_name):
+            api.direct_message_delete(id,m.id)
+    return
 
 def blip():
     wget.download('https://i.pinimg.com/736x/69/7a/aa/697aaa89a67342ff6e115bb7f312d988.jpg','./snap.jpg')
@@ -101,7 +108,7 @@ def thanos():
     if choice.lower()=='d': 
         try:
             cancella_p()
-            time.sleep(5)
+            time.sleep(2)
             cancella_s()
             time.sleep(3)
         except Exception as e:
@@ -113,7 +120,7 @@ def thanos():
     elif choice.lower()=='a': 
         try:
             archivia_p()
-            time.sleep(5)
+            time.sleep(2)
             cancella_s()
             time.sleep(3)
         except Exception as e:
@@ -128,28 +135,76 @@ def unfollow_all():
     following=api.user_following(api.user_id_from_username(user_name))
     for i in following: 
         api.user_unfollow(i) 
-        time.sleep(random.randint(1,60)/10)
+        randomsleep()   #time.sleep(random.randint(1,60)/10)
         print("Removed ",api.username_from_user_id(f))
 
 def unfollow_infami():
     followers=api.user_followers(api.user_id_from_username(user_name))
     following=api.user_following(api.user_id_from_username(user_name))
-    for f in following: 
-        print("Scanning",api.username_from_user_id(f))
-        if f not in followers: 
-            api.user_unfollow(f)
-            print("Removed ",api.username_from_user_id(f))
-        time.sleep(random.randint(1,60)/10)
-        
+    choice=input("Enable Manual mode? (Y for yes)").lower()
+    if choice == 'y':
+        for f in following: 
+            print("Scanning",api.username_from_user_id(f))
+            if f not in followers: 
+                un=input("This user don't follow you, unfollow him? (Y for yes)").lower()
+                if un== 'y':
+                    api.user_unfollow(f)
+                    print("Removed ",api.username_from_user_id(f))
+                else:
+                    print("Skipped ",api.username_from_user_id(f))
+            randomsleep()   #time.sleep(random.randint(1,60)/10)
+    else:
+        for f in following: 
+            print("Scanning",api.username_from_user_id(f))
+            if f not in followers: 
+                api.user_unfollow(f)
+                print("Removed ",api.username_from_user_id(f))
+            randomsleep()   #time.sleep(random.randint(1,60)/10)
+
+def backup():
+    if not os.path.exists('./backup'): os.mkdir("./backup")
+    medias=api.user_medias_v1(api.user_id_from_username(user_name),0)
+    if len(medias)==0:
+        print("You have 0 posts")
+        return
+    else:
+        print("You have {} posts".format(len(medias)))
+        medias=[m.id for m in medias]
+        res=save_medias(medias)
+        if res == True: 
+            print("Completed!")
+
+def save_medias(media_ids):                         
+    if len(media_ids)==0: return False
+    if not os.path.exists('./backup'): os.mkdir("./backup")
+    for m in media_ids:
+        randomsleep()
+        path=(api.media_user(m)).username
+        if not os.path.exists('./backup/'+path): os.mkdir("./backup/"+path)
+        try:api.album_download(m,'./backup/'+path)
+        except: pass
+        try:api.photo_download(m,'./backup/'+path)
+        except: pass
+        try:api.video_download(m,'./backup/'+path)
+        except: pass
+        try:api.clip_download((m,'./backup/'+path))
+        except: pass
+        try:api.igtv_download(m,'./backup/'+path)
+        except: pass
+    return True
+
+
+############################################################################################################################      
 
 def menu():
-    print("Selezionare l' opzione desiderata")
-    print("1. Cancella/archivia storie e posts")
-    print("2. Rimuovi chi non ti segue (inclusa chiara ferragni)")
-    print("3. Rimuovi tutti i following")
-    print("4. Cancella tutti i direct")
+    print("Select what to do")
+    print("1. Delete/archive stories and posts")
+    print("2. Unfollow who doesn't follow you back (including Chiara Ferragni)(Manual mode can be selected)")
+    print("3. Unfollow all")
+    print("4. Deep erase of all your Directs")
+    print("5. Backup ALL your post")
     
-    return input("Inserisci numero: ")
+    return input("Choice (1-5): ")
 
 if __name__ == '__main__':
     login()
@@ -158,4 +213,6 @@ if __name__ == '__main__':
     elif choice=='2': unfollow_infami()
     elif choice=='3': unfollow_all()
     elif choice=='4': direct_eraser()
+    elif choice=='5': backup()
     else: exit(0)
+    input("Press ENTER to exit")
