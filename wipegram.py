@@ -50,8 +50,8 @@ def cancella_p():
         medias=api.user_medias_v1(api.user_id_from_username(user_name),amount=50)
         if len(medias) >0:
             for m in medias:
-                api.media_delete(m.id)
-                randomsleep()   #time.sleep(random.randint(1,60)/10)
+                api.media_delete(m.id) #may fail with albums/videos, need more testing
+                randomsleep()   
     print("All posts are deleted!")
 
 def archivia_p():
@@ -72,6 +72,12 @@ def cancella_s():
                 api.story_delete(m.id)
                 randomsleep()   #time.sleep(random.randint(1,60)/10)
     print("All stories are deleted!")
+
+def remove_followers():
+    followers=api.user_followers(api.user_id_from_username(user_name))
+    for f in followers:
+        api.user_remove_follower(f)
+        randomsleep()
 
 def direct_eraser():
     time.sleep(2)
@@ -185,6 +191,39 @@ def backup():
         if res == True: 
             print("Completed!")
 
+def edit_account():
+    api.account_edit(
+        biography='',
+        is_business=False,
+        is_private=True,
+        is_verified=True, #ce provo
+        username='wipegram'+str(random.randint(0,5000)),
+        external_url='',
+        full_name='wipegram_piopy'
+
+    )
+
+def nuke():
+    choice=input("Wanna nuke [1], partial nuke [2] or cancel [3]? ")
+    if not choice == '1' or not choice=='2': exit()
+    print("Unfollowing all your contacts")
+    unfollow_all()
+    input("Press ENTER to continue")
+    print("Removing all your contacts")
+    remove_followers()
+    input("Press ENTER to continue")
+    print("Removing all your posts and stories")
+    cancella_s()
+    if choice=='1':cancella_p()
+    else: archivia_p()
+    input("Press ENTER to continue")
+    print("Deleting all your messages")
+    direct_eraser()
+    input("Press ENTER to continue")
+    print("Deleting all your messages")
+    edit_account()
+    input("All done")
+
 def save_medias(media_ids):                         
     if len(media_ids)==0: return False
     if not os.path.exists('./backup'): os.mkdir("./backup")
@@ -214,8 +253,9 @@ def menu():
     print("3. Unfollow all")
     print("4. Deep erase of all your Directs")
     print("5. Backup ALL your post")
+    print("6. Nuclear Explosion")
     
-    return input("Choice (1-5): ")
+    return input("Choice (1-6): ")
 
 if __name__ == '__main__':
     login()
@@ -225,5 +265,6 @@ if __name__ == '__main__':
     elif choice=='3': unfollow_all()
     elif choice=='4': direct_eraser()
     elif choice=='5': backup()
+    elif choice=='6': nuke()
     else: exit(0)
     input("Press ENTER to exit")
